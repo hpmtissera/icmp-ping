@@ -35,12 +35,21 @@ int main()
 
     struct icmphdr icmp_hdr;
 
-    memset(&icmp_hdr, 0, sizeof icmp_hdr);
-    icmp_hdr.type = 8;
-    icmp_hdr.un.echo.id = 1234;//arbitrary id
     unsigned char data[2048];
+    memset(&icmp_hdr, 0, sizeof icmp_hdr);
+    icmp_hdr.type = 8; // ICMP_ECHO from #include <netinet/ip_icmp.h>
+    icmp_hdr.un.echo.id = 1234;//arbitrary id
     memcpy(data, &icmp_hdr, sizeof icmp_hdr);
     memcpy(data + sizeof icmp_hdr, "message", 7); //icmp payload
+
+    struct icmphdr icmp_hdr6;
+
+    unsigned char data_v6[2048];
+    memset(&icmp_hdr6, 0, sizeof icmp_hdr6);
+    icmp_hdr6.type = 128; // ICMPV6_ECHO_REQUEST from #include icmpv6.h
+    icmp_hdr6.un.echo.id = 1234;//arbitrary id
+    memcpy(data_v6, &icmp_hdr6, sizeof icmp_hdr6);
+    memcpy(data_v6 + sizeof icmp_hdr6, "message", 7); //icmp payload
 
 
     int sockfd_v4 = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP); //create socket
@@ -56,7 +65,7 @@ int main()
     long ipv4_icmp = sendto (sockfd_v4, data, sizeof icmp_hdr + 7, 0 , (struct sockaddr_in *)&ipv4_addr, sizeof(struct sockaddr_in));
     printf("output ipv4_icmp %ld\n", ipv4_icmp);
 
-    long ipv6_icmp = sendto (sockfd_v6, data, sizeof icmp_hdr + 7, 0 , (struct sockaddr_in6 *)&ipv6_addr, sizeof(struct sockaddr_in6));
+    long ipv6_icmp = sendto (sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0 , (struct sockaddr_in6 *)&ipv6_addr, sizeof(struct sockaddr_in6));
     printf("output ipv6_icmp %ld\n", ipv6_icmp);
 
     return 0;
