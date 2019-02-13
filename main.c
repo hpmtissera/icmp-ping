@@ -5,7 +5,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <arpa/inet.h>
-#include <netinet/ip_icmp.h>
 
 int main()
 {
@@ -37,14 +36,14 @@ int main()
     struct icmphdr icmp_hdr;
 
     memset(&icmp_hdr, 0, sizeof icmp_hdr);
-    icmp_hdr.type = ICMP_ECHO;
+    icmp_hdr.type = 8;
     icmp_hdr.un.echo.id = 1234;//arbitrary id
     unsigned char data[2048];
     memcpy(data, &icmp_hdr, sizeof icmp_hdr);
-    memcpy(data + sizeof icmp_hdr, "hello", 5); //icmp payload
+    memcpy(data + sizeof icmp_hdr, "message", 7); //icmp payload
 
 
-    int sockfd_v4 = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP); //create socket
+    int sockfd_v4 = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP); //create socket
     int sockfd_v6 = socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6); //create socket
 
     ipv4_addr.sin_family = AF_INET;
@@ -60,6 +59,9 @@ int main()
 //    char str[INET6_ADDRSTRLEN];
 //    inet_ntop(AF_INET6, &(dest_addr.sin6_addr), str, INET6_ADDRSTRLEN);
 //    printf("%s\n", str);
+
+    long ipv4_icmp = sendto (sockfd_v4, data, sizeof icmp_hdr + 7, 0 , (struct sockaddr_in *)&ipv4_addr, sizeof(struct sockaddr_in));
+    printf("output ipv4_icmp %ld\n", ipv4_icmp);
 
     long ipv4 = sendto (sockfd_v4, message, strlen(message)+1, 0 , (struct sockaddr_in *)&ipv4_addr, sizeof(struct sockaddr_in));
     printf("output ipv4 %ld\n", ipv4);
