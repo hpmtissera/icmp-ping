@@ -1,8 +1,4 @@
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <string.h>
-#include <netinet/in.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 
