@@ -2,6 +2,52 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
+void hexDump(char *desc, void *addr, int len)
+{
+    int i;
+    unsigned char buff[17];
+    unsigned char *pc = (unsigned char*)addr;
+
+    // Output description if given.
+    if (desc != NULL)
+        printf ("%s:\n", desc);
+
+    // Process every byte in the data.
+    for (i = 0; i < len; i++) {
+        // Multiple of 16 means new line (with line offset).
+
+        if ((i % 16) == 0) {
+            // Just don't print ASCII for the zeroth line.
+            if (i != 0)
+                printf("  %s\n", buff);
+
+            // Output the offset.
+            printf("  %04x ", i);
+        }
+
+        // Now the hex code for the specific character.
+        printf(" %02x", pc[i]);
+
+        // And store a printable ASCII character for later.
+        if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
+            buff[i % 16] = '.';
+        } else {
+            buff[i % 16] = pc[i];
+        }
+
+        buff[(i % 16) + 1] = '\0';
+    }
+
+    // Pad out last line if not exactly 16 characters.
+    while ((i % 16) != 0) {
+        printf("   ");
+        i++;
+    }
+
+    // And print the final ASCII bit.
+    printf("  %s\n", buff);
+}
+
 int main() {
 
     struct icmphdr {
@@ -51,23 +97,43 @@ int main() {
 
     ipv6_addr.sin6_family = AF_INET6;
     inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
+//    inet_pton(AF_INET6, "2001:4860:4860::8888", &ipv6_addr.sin6_addr);
 
 
-    long ipv4_icmp = sendto(sockfd_v4, data, sizeof icmp_hdr + 7, 0, (struct sockaddr_in *) &ipv4_addr,
-                            sizeof(struct sockaddr_in));
-    printf("output ipv4_icmp %ld\n", ipv4_icmp);
-
-    long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
-                            sizeof(struct sockaddr_in6));
-    printf("output ipv6_icmp %ld\n", ipv6_icmp);
+//    long ipv4_icmp = sendto(sockfd_v4, data, sizeof icmp_hdr + 7, 0, (struct sockaddr_in *) &ipv4_addr,
+//                            sizeof(struct sockaddr_in));
+//    printf("output ipv4_icmp %ld\n", ipv4_icmp);
+//
+//    long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
+//                            sizeof(struct sockaddr_in6));
+//    printf("output ipv6_icmp %ld\n", ipv6_icmp);
 
     int sockfd_v4_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP); //create socket
     int sockfd_v6_raw = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6); //create socket
 
-    char *message = "hello5545";
+    printf("sockfd_v6_raw : %d\n", sockfd_v6_raw);
+
+    char *message = "message";
     long ipv4_raw = sendto(sockfd_v4_raw, message, strlen(message) + 1, 0, (struct sockaddr_in *) &ipv4_addr,
                            sizeof(struct sockaddr_in));
     printf("output ipv4_raw %ld\n", ipv4_raw);
+
+    printf("sizeof(ipv6_addr.sin6_addr) : %ld\n", sizeof(ipv6_addr.sin6_addr));
+    printf("sizeof(ipv6_addr.sin6_family) : %ld\n", sizeof(ipv6_addr.sin6_family));
+    printf("sizeof(ipv6_addr.sin6_flowinfo) : %ld\n", sizeof(ipv6_addr.sin6_flowinfo));
+    printf("sizeof(ipv6_addr.sin6_port) : %ld\n", sizeof(ipv6_addr.sin6_port));
+    printf("sizeof(ipv6_addr.sin6_len) : %ld\n", sizeof(ipv6_addr.sin6_len));
+    printf("sizeof(ipv6_addr.sin6_scope_id) : %ld\n", sizeof(ipv6_addr.sin6_scope_id));
+    printf("sizeof(ipv6_addr) : %ld\n", sizeof(ipv6_addr));
+
+    printf("ipv6_addr.sin6_addr : %ld\n", ipv6_addr.sin6_addr);
+    printf("ipv6_addr.sin6_family : %d\n", ipv6_addr.sin6_family);
+    printf("ipv6_addr.sin6_flowinfo : %d\n", ipv6_addr.sin6_flowinfo);
+    printf("ipv6_addr.sin6_port : %d\n", ipv6_addr.sin6_port);
+    printf("ipv6_addr.sin6_len : %d\n", ipv6_addr.sin6_len);
+    printf("ipv6_addr.sin6_scope_id : %d\n", ipv6_addr.sin6_scope_id);
+
+    hexDump(NULL, &ipv6_addr, sizeof(ipv6_addr));
 
     long ipv6_raw = sendto(sockfd_v6_raw, message, strlen(message) + 1, 0, (struct sockaddr_in6 *) &ipv6_addr,
                            sizeof(struct sockaddr_in6));
