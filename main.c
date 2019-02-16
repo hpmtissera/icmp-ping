@@ -108,30 +108,16 @@ int main() {
 //                            sizeof(struct sockaddr_in6));
 //    printf("output ipv6_icmp %ld\n", ipv6_icmp);
 
-    int sockfd_v4_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP); //create socket
+//    int sockfd_v4_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP); //create socket
     int sockfd_v6_raw = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6); //create socket
 
     printf("sockfd_v6_raw : %d\n", sockfd_v6_raw);
 
     char *message = "message";
-    long ipv4_raw = sendto(sockfd_v4_raw, message, strlen(message) + 1, 0, (struct sockaddr_in *) &ipv4_addr,
-                           sizeof(struct sockaddr_in));
-    printf("output ipv4_raw %ld\n", ipv4_raw);
+//    long ipv4_raw = sendto(sockfd_v4_raw, message, strlen(message) + 1, 0, (struct sockaddr_in *) &ipv4_addr,
+//                           sizeof(struct sockaddr_in));
+//    printf("output ipv4_raw %ld\n", ipv4_raw);
 
-    printf("sizeof(ipv6_addr.sin6_addr) : %ld\n", sizeof(ipv6_addr.sin6_addr));
-    printf("sizeof(ipv6_addr.sin6_family) : %ld\n", sizeof(ipv6_addr.sin6_family));
-    printf("sizeof(ipv6_addr.sin6_flowinfo) : %ld\n", sizeof(ipv6_addr.sin6_flowinfo));
-    printf("sizeof(ipv6_addr.sin6_port) : %ld\n", sizeof(ipv6_addr.sin6_port));
-    printf("sizeof(ipv6_addr.sin6_len) : %ld\n", sizeof(ipv6_addr.sin6_len));
-    printf("sizeof(ipv6_addr.sin6_scope_id) : %ld\n", sizeof(ipv6_addr.sin6_scope_id));
-    printf("sizeof(ipv6_addr) : %ld\n", sizeof(ipv6_addr));
-
-    printf("ipv6_addr.sin6_addr : %ld\n", ipv6_addr.sin6_addr);
-    printf("ipv6_addr.sin6_family : %d\n", ipv6_addr.sin6_family);
-    printf("ipv6_addr.sin6_flowinfo : %d\n", ipv6_addr.sin6_flowinfo);
-    printf("ipv6_addr.sin6_port : %d\n", ipv6_addr.sin6_port);
-    printf("ipv6_addr.sin6_len : %d\n", ipv6_addr.sin6_len);
-    printf("ipv6_addr.sin6_scope_id : %d\n", ipv6_addr.sin6_scope_id);
 
     hexDump(NULL, &ipv6_addr, sizeof(ipv6_addr));
 
