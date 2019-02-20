@@ -71,10 +71,7 @@ int main() {
 
     struct sockaddr_in6 ipv6_addr; //set up dest address info
 
-    #define icmp6_data16	icmp6_dataun.icmp6_un_data16
     struct icmp6_hdr icmp_hdr6;
-    #define icmp6_id	icmp6_data16[0]		/* echo request/reply */
-    #define icmp6_seq	icmp6_data16[1]		/* echo request/reply */
 
     unsigned char data_v6[2048];
     memset(&icmp_hdr6, 0, sizeof icmp_hdr6);
@@ -82,12 +79,6 @@ int main() {
     (&icmp_hdr6)->icmp6_code = 0;
     memcpy(data_v6, &icmp_hdr6, sizeof icmp_hdr6);
     memcpy(data_v6 + sizeof icmp_hdr6, "message", 7); //icmp payload
-
-    int ident;
-    ident = getpid() & 0xFFFF;
-    (&icmp_hdr6)->icmp6_id = htons(ident);
-    (&icmp_hdr6)->icmp6_seq = ntohs(47806);
-
 
     int sockfd_v6 = socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6); //create socket
 
@@ -131,7 +122,7 @@ int main() {
         ni = (struct icmp6_nodeinfo *) data_v6;
         seq = ntohs(*(u_int16_t *)ni->icmp6_ni_nonce);
 
-        printf("Icmp6 type : %d\n", icp->icmp6_type);
+        printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
         printf("Icmp6 seq : %d\n", seq);
     }
 
