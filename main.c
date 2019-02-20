@@ -120,8 +120,6 @@ int main() {
     memcpy(data_v6, &icmp_hdr6, sizeof icmp_hdr6);
     memcpy(data_v6 + sizeof icmp_hdr6, "message", 7); //icmp payload
 
-//    struct iovec iov[2];
-
     int ident;
     ident = getpid() & 0xFFFF;
     (&icmp_hdr6)->icmp6_id = htons(ident);
@@ -155,8 +153,6 @@ int main() {
     struct msghdr m;
     struct cmsghdr *cm = NULL;
 
-# define CONTROLLEN    10240
-
     m.msg_name = (caddr_t) &ipv6_addr;
     m.msg_namelen = sizeof(ipv6_addr);
     memset(&iov, 0, sizeof(iov));
@@ -184,7 +180,6 @@ int main() {
 
         printf("Icmp6 type : %d\n", icp->icmp6_type);
         printf("Icmp6 seq : %d\n", seq);
-
     }
 
     return 0;
