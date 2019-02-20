@@ -52,23 +52,6 @@ void hexDump(char *desc, void *addr, int len) {
 
 int main() {
 
-    struct icmphdr {
-        u_int8_t type;        /* message type */
-        u_int8_t code;        /* type sub-code */
-        u_int16_t checksum;
-        union {
-            struct {
-                u_int16_t id;
-                u_int16_t sequence;
-            } echo;            /* echo datagram */
-            u_int32_t gateway;    /* gateway address */
-            struct {
-                u_int16_t    __unused;
-                u_int16_t mtu;
-            } frag;            /* path mtu discovery */
-        } un;
-    };
-
     struct icmp6_hdr {
         u_int8_t icmp6_type;    /* type field */
         u_int8_t icmp6_code;    /* code field */
@@ -86,27 +69,7 @@ int main() {
         /* could be followed by reply data */
     }__attribute__((__packed__));
 
-    struct msghdr {
-        void		*msg_name;	/* [XSI] optional address */
-        socklen_t	msg_namelen;	/* [XSI] size of address */
-        struct		iovec *msg_iov;	/* [XSI] scatter/gather array */
-        int		msg_iovlen;	/* [XSI] # elements in msg_iov */
-        void		*msg_control;	/* [XSI] ancillary data, see below */
-        socklen_t	msg_controllen;	/* [XSI] ancillary data buffer len */
-        int		msg_flags;	/* [XSI] flags on received message */
-    };
-
     struct sockaddr_in6 ipv6_addr; //set up dest address info
-    struct sockaddr_in ipv4_addr;
-
-    struct icmphdr icmp_hdr;
-
-    unsigned char data[2048];
-    memset(&icmp_hdr, 0, sizeof icmp_hdr);
-    icmp_hdr.type = 8; // ICMP_ECHO from #include <netinet/ip_icmp.h>
-    icmp_hdr.un.echo.id = 1234;//arbitrary id
-    memcpy(data, &icmp_hdr, sizeof icmp_hdr);
-    memcpy(data + sizeof icmp_hdr, "message", 7); //icmp payload
 
     #define icmp6_data16	icmp6_dataun.icmp6_un_data16
     struct icmp6_hdr icmp_hdr6;
@@ -126,11 +89,7 @@ int main() {
     (&icmp_hdr6)->icmp6_seq = ntohs(47806);
 
 
-    int sockfd_v4 = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP); //create socket
     int sockfd_v6 = socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6); //create socket
-
-    ipv4_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, "8.8.8.8", &ipv4_addr.sin_addr);
 
     ipv6_addr.sin6_family = AF_INET6;
 //    ipv6_addr.sin6_scope_id = 0;
@@ -151,7 +110,6 @@ int main() {
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
 
     struct msghdr m;
-    struct cmsghdr *cm = NULL;
 
     m.msg_name = (caddr_t) &ipv6_addr;
     m.msg_namelen = sizeof(ipv6_addr);
@@ -160,20 +118,15 @@ int main() {
     iov[0].iov_len = sizeof(data_v6);
     m.msg_iov = iov;
     m.msg_iovlen = 1;
-    m.msg_control = (void *) cm;
 
     long cc = recvmsg(sockfd_v6, &m, 0);
     printf("cc : %ld\n", cc);
 
-    struct sockaddr *from;
-    int fromlen;
     struct icmp6_hdr *icp;
     struct icmp6_nodeinfo *ni;
     u_int16_t seq;
 
     if (cc > 0) {
-        from = (struct sockaddr *) (&m)->msg_name;
-        fromlen = (&m)->msg_namelen;
         icp = (struct icmp6_hdr *) data_v6;
         ni = (struct icmp6_nodeinfo *) data_v6;
         seq = ntohs(*(u_int16_t *)ni->icmp6_ni_nonce);
