@@ -138,35 +138,16 @@ int main() {
 //    ipv6_addr.sin6_scope_id = 0;
     ipv6_addr.sin6_scope_id = if_nametoindex("en0");
 
-    struct msghdr smsghdr;
-    memset(&smsghdr, 0, sizeof(smsghdr));
 
     struct iovec iov[2];
-
-    #define MAXPACKETLEN	131072
-    u_char outpack[MAXPACKETLEN];
-
-
-    smsghdr.msg_name = (caddr_t)&ipv6_addr;
-    smsghdr.msg_namelen = sizeof(ipv6_addr);
     memset(&iov, 0, sizeof(iov));
     iov[0].iov_base = (caddr_t)data_v6;
-    smsghdr.msg_iov = iov;
-    smsghdr.msg_iovlen = 1;
-
-    long i = sendmsg(sockfd_v6, &smsghdr, 0);
-//    printf("sendmsg i : %ld\n", i);
 
     printf("Interface id : %d\n", if_nametoindex("en0"));
 
 //    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
     inet_pton(AF_INET6, "fe80::18e1:317:51c:5db0", &ipv6_addr.sin6_addr);
 
-
-//    long ipv4_icmp = sendto(sockfd_v4, data, sizeof icmp_hdr + 7, 0, (struct sockaddr_in *) &ipv4_addr,
-//                            sizeof(struct sockaddr_in));
-//    printf("output ipv4_icmp %ld\n", ipv4_icmp);
-//
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
                             sizeof(struct sockaddr_in6));
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
@@ -183,11 +164,7 @@ int main() {
     iov[0].iov_len = sizeof(data_v6);
     m.msg_iov = iov;
     m.msg_iovlen = 1;
-
-//    memset(cm, 0, CONTROLLEN);
-
     m.msg_control = (void *) cm;
-//    m.msg_controllen = CONTROLLEN;
 
     long cc = recvmsg(sockfd_v6, &m, 0);
     printf("cc : %ld\n", cc);
@@ -209,26 +186,6 @@ int main() {
         printf("Icmp6 seq : %d\n", seq);
 
     }
-
-//    int sockfd_v4_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP); //create socket
-//    int sockfd_v6_raw = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6); //create socket
-
-//    int bindResult = bind(sockfd_v6_raw, (struct sockaddr *)&ipv6_addr, sizeof(ipv6_addr));
-//    printf("bind result v6-raw : %d\n", bindResult);
-
-//    printf("sockfd_v6_raw : %d\n", sockfd_v6_raw);
-
-//    char *message = "message";
-//    long ipv4_raw = sendto(sockfd_v4_raw, message, strlen(message) + 1, 0, (struct sockaddr_in *) &ipv4_addr,
-//                           sizeof(struct sockaddr_in));
-//    printf("output ipv4_raw %ld\n", ipv4_raw);
-
-
-//    hexDump(NULL, &ipv6_addr, sizeof(ipv6_addr));
-//
-//    long ipv6_raw = sendto(sockfd_v6_raw, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
-//                           sizeof(struct sockaddr_in6));
-//    printf("output ipv6_raw %ld\n", ipv6_raw);
 
     return 0;
 }
