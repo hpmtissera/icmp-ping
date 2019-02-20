@@ -1,7 +1,9 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdio.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <zconf.h>
 
 void hexDump(char *desc, void *addr, int len) {
     int i;
@@ -84,6 +86,16 @@ int main() {
         /* could be followed by reply data */
     }__attribute__((__packed__));
 
+    struct msghdr {
+        void		*msg_name;	/* [XSI] optional address */
+        socklen_t	msg_namelen;	/* [XSI] size of address */
+        struct		iovec *msg_iov;	/* [XSI] scatter/gather array */
+        int		msg_iovlen;	/* [XSI] # elements in msg_iov */
+        void		*msg_control;	/* [XSI] ancillary data, see below */
+        socklen_t	msg_controllen;	/* [XSI] ancillary data buffer len */
+        int		msg_flags;	/* [XSI] flags on received message */
+    };
+
     struct sockaddr_in6 ipv6_addr; //set up dest address info
     struct sockaddr_in ipv4_addr;
 
@@ -96,14 +108,24 @@ int main() {
     memcpy(data, &icmp_hdr, sizeof icmp_hdr);
     memcpy(data + sizeof icmp_hdr, "message", 7); //icmp payload
 
-    struct icmphdr icmp_hdr6;
+    #define icmp6_data16	icmp6_dataun.icmp6_un_data16
+    struct icmp6_hdr icmp_hdr6;
+    #define icmp6_id	icmp6_data16[0]		/* echo request/reply */
+    #define icmp6_seq	icmp6_data16[1]		/* echo request/reply */
 
     unsigned char data_v6[2048];
     memset(&icmp_hdr6, 0, sizeof icmp_hdr6);
-    icmp_hdr6.type = 128; // ICMPV6_ECHO_REQUEST from #include icmpv6.h
-    icmp_hdr6.un.echo.id = 1234;//arbitrary id
+    (&icmp_hdr6)->icmp6_type = 128; // ICMPV6_ECHO_REQUEST from #include icmpv6.h
+    (&icmp_hdr6)->icmp6_code = 0;
     memcpy(data_v6, &icmp_hdr6, sizeof icmp_hdr6);
     memcpy(data_v6 + sizeof icmp_hdr6, "message", 7); //icmp payload
+
+//    struct iovec iov[2];
+
+    int ident;
+    ident = getpid() & 0xFFFF;
+    (&icmp_hdr6)->icmp6_id = htons(ident);
+    (&icmp_hdr6)->icmp6_seq = ntohs(47806);
 
 
     int sockfd_v4 = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP); //create socket
@@ -116,10 +138,29 @@ int main() {
 //    ipv6_addr.sin6_scope_id = 0;
     ipv6_addr.sin6_scope_id = if_nametoindex("en0");
 
+    struct msghdr smsghdr;
+    memset(&smsghdr, 0, sizeof(smsghdr));
+
+    struct iovec iov[2];
+
+    #define MAXPACKETLEN	131072
+    u_char outpack[MAXPACKETLEN];
+
+
+    smsghdr.msg_name = (caddr_t)&ipv6_addr;
+    smsghdr.msg_namelen = sizeof(ipv6_addr);
+    memset(&iov, 0, sizeof(iov));
+    iov[0].iov_base = (caddr_t)data_v6;
+    smsghdr.msg_iov = iov;
+    smsghdr.msg_iovlen = 1;
+
+    long i = sendmsg(sockfd_v6, &smsghdr, 0);
+//    printf("sendmsg i : %ld\n", i);
+
     printf("Interface id : %d\n", if_nametoindex("en0"));
 
-    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
-//    inet_pton(AF_INET6, "2001:4860:4860::8888", &ipv6_addr.sin6_addr);
+//    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
+    inet_pton(AF_INET6, "fe80::18e1:317:51c:5db0", &ipv6_addr.sin6_addr);
 
 
 //    long ipv4_icmp = sendto(sockfd_v4, data, sizeof icmp_hdr + 7, 0, (struct sockaddr_in *) &ipv4_addr,
@@ -131,7 +172,6 @@ int main() {
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
 
     struct msghdr m;
-    struct iovec iov[2];
     struct cmsghdr *cm = NULL;
 
 # define CONTROLLEN    10240
