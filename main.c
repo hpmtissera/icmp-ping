@@ -100,6 +100,9 @@ int main() {
                             sizeof(struct sockaddr_in6));
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
 
+
+    // Receive
+
     struct msghdr m;
 
     m.msg_name = (caddr_t) &ipv6_addr;
