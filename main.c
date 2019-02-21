@@ -91,10 +91,11 @@ int main() {
     memset(&iov, 0, sizeof(iov));
     iov[0].iov_base = (caddr_t)data_v6;
 
-    printf("Interface id : %d\n", if_nametoindex("en0"));
+    printf("Interface id en0 : %d\n", if_nametoindex("en0"));
+    printf("Interface id lo0 : %d\n", if_nametoindex("lo0"));
 
-//    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
-    inet_pton(AF_INET6, "fe80::18e1:317:51c:5db0", &ipv6_addr.sin6_addr);
+    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
+//    inet_pton(AF_INET6, "fe80::18e1:317:51c:5db0", &ipv6_addr.sin6_addr);
 
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
                             sizeof(struct sockaddr_in6));
@@ -119,6 +120,18 @@ int main() {
     struct icmp6_hdr *icp;
     struct icmp6_nodeinfo *ni;
     u_int16_t seq;
+
+    if (cc > 0) {
+        icp = (struct icmp6_hdr *) data_v6;
+        ni = (struct icmp6_nodeinfo *) data_v6;
+        seq = ntohs(*(u_int16_t *)ni->icmp6_ni_nonce);
+
+        printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
+        printf("Icmp6 seq : %d\n", seq);
+    }
+
+    cc = recvmsg(sockfd_v6, &m, 0);
+    printf("cc : %ld\n", cc);
 
     if (cc > 0) {
         icp = (struct icmp6_hdr *) data_v6;
