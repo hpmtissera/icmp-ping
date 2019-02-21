@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#include <zconf.h>
+#include <netdb.h>
 
 void hexDump(char *desc, void *addr, int len) {
     int i;
@@ -86,7 +86,6 @@ int main() {
 //    ipv6_addr.sin6_scope_id = 0;
     ipv6_addr.sin6_scope_id = if_nametoindex("en0");
 
-
     struct iovec iov[2];
     memset(&iov, 0, sizeof(iov));
     iov[0].iov_base = (caddr_t)data_v6;
@@ -94,13 +93,22 @@ int main() {
     printf("Interface id en0 : %d\n", if_nametoindex("en0"));
     printf("Interface id lo0 : %d\n", if_nametoindex("lo0"));
 
-    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
-//    inet_pton(AF_INET6, "fe80::18e1:317:51c:5db0", &ipv6_addr.sin6_addr);
+//    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
+    inet_pton(AF_INET6, "fe80::1035:a68:335d:895b", &ipv6_addr.sin6_addr);
 
+    struct addrinfo hints, *res;
+    hints.ai_family = AF_INET6;
+    hints.ai_protocol = IPPROTO_ICMPV6;
+
+    long test =  getaddrinfo("fe80::1035:a68:335d:895b", NULL, &hints, &res);
+
+    ipv6_addr.sin6_scope_id = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
+
+    printf("sin6_scope_id result : %ld\n", ipv6_addr.sin6_scope_id);
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
-                            sizeof(struct sockaddr_in6));
+                            sizeof(ipv6_addr));
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
-
+//    freeaddrinfo(res);
 
     // Receive
 
