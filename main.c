@@ -108,8 +108,6 @@ int main() {
 
     long test = getaddrinfo("fe80::1035:a68:335d:895b", NULL, &hints, &res);
 
-//    ipv6_addr.sin6_scope_id = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
-
     printf("sin6_scope_id result : %d\n", ipv6_addr.sin6_scope_id);
 
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
@@ -143,23 +141,7 @@ int main() {
         seq = ntohs(icp->icmp6_seq);
 
         printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
-
-//        printf("ni->icmp6_ni_nounce1 %d\n", ntohs(ni->icmp6_ni_nonce[0]));
-//        printf("ni->icmp6_ni_nounce2 %d\n", ni->icmp6_ni_nonce[1]);
-//        printf("ni->icmp6_ni_nounce3 %d\n", ni->icmp6_ni_nonce[2]);
-//        printf("ni->icmp6_ni_nounce4 %d\n", ni->icmp6_ni_nonce[3]);
-
         printf("Icmp6 seq : %d\n", seq);
-//        printf("Icmp6 seq1 : %d\n", seq1);
-        printf("\nIcmp6 struct size : %ld\n", sizeof(struct icmp6_hdr));
-//        printf("icmp6_type offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_type));
-//        printf("icmp6_code offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_code));
-//        printf("icmp6_cksum offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_cksum));
-//        printf("icmp6_dataun offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_dataun));
-//
-        printf("icmp6_nodeinfo struct size : %ld\n", sizeof(struct icmp6_nodeinfo));
-//        printf("icmp6_ni_hdr offset: %ld\n", offsetof(struct icmp6_nodeinfo, icmp6_ni_hdr));
-        printf("icmp6_ni_nonce offset: %ld\n", offsetof(struct icmp6_nodeinfo, icmp6_ni_nonce));
     }
 
     return 0;
