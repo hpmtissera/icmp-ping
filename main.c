@@ -4,6 +4,10 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netdb.h>
+#include <stddef.h>
+
+#define icmp6_seq	icmp6_data16[1]		/* echo request/reply */
+#define icmp6_data16	icmp6_dataun.icmp6_un_data16
 
 void hexDump(char *desc, void *addr, int len) {
     int i;
@@ -65,7 +69,7 @@ int main() {
 
     struct icmp6_nodeinfo {
         struct icmp6_hdr icmp6_ni_hdr;
-        u_int8_t icmp6_ni_nonce[8];
+        u_int16_t icmp6_ni_nonce[4];
         /* could be followed by reply data */
     }__attribute__((__packed__));
 
@@ -77,6 +81,8 @@ int main() {
     memset(&icmp_hdr6, 0, sizeof icmp_hdr6);
     (&icmp_hdr6)->icmp6_type = 128; // ICMPV6_ECHO_REQUEST from #include icmpv6.h
     (&icmp_hdr6)->icmp6_code = 0;
+    (&icmp_hdr6)->icmp6_seq = ntohs(35000);
+
     memcpy(data_v6, &icmp_hdr6, sizeof icmp_hdr6);
     memcpy(data_v6 + sizeof icmp_hdr6, "message", 7); //icmp payload
 
@@ -88,26 +94,28 @@ int main() {
 
     struct iovec iov[2];
     memset(&iov, 0, sizeof(iov));
-    iov[0].iov_base = (caddr_t)data_v6;
+    iov[0].iov_base = (caddr_t) data_v6;
 
     printf("Interface id en0 : %d\n", if_nametoindex("en0"));
     printf("Interface id lo0 : %d\n", if_nametoindex("lo0"));
 
-//    inet_pton(AF_INET6, "::1", &ipv6_addr.sin6_addr);
+//    inet_pton(AF_INET6, "2001:4860:4860::8888", &ipv6_addr.sin6_addr);
     inet_pton(AF_INET6, "fe80::1035:a68:335d:895b", &ipv6_addr.sin6_addr);
 
     struct addrinfo hints, *res;
     hints.ai_family = AF_INET6;
     hints.ai_protocol = IPPROTO_ICMPV6;
 
-    long test =  getaddrinfo("fe80::1035:a68:335d:895b", NULL, &hints, &res);
+    long test = getaddrinfo("fe80::1035:a68:335d:895b", NULL, &hints, &res);
 
-    ipv6_addr.sin6_scope_id = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
+//    ipv6_addr.sin6_scope_id = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
 
-    printf("sin6_scope_id result : %ld\n", ipv6_addr.sin6_scope_id);
+    printf("sin6_scope_id result : %d\n", ipv6_addr.sin6_scope_id);
+
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
                             sizeof(ipv6_addr));
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
+
 //    freeaddrinfo(res);
 
     // Receive
@@ -132,22 +140,26 @@ int main() {
     if (cc > 0) {
         icp = (struct icmp6_hdr *) data_v6;
         ni = (struct icmp6_nodeinfo *) data_v6;
-        seq = ntohs(*(u_int16_t *)ni->icmp6_ni_nonce);
+        seq = ntohs(icp->icmp6_seq);
 
         printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
+
+//        printf("ni->icmp6_ni_nounce1 %d\n", ntohs(ni->icmp6_ni_nonce[0]));
+//        printf("ni->icmp6_ni_nounce2 %d\n", ni->icmp6_ni_nonce[1]);
+//        printf("ni->icmp6_ni_nounce3 %d\n", ni->icmp6_ni_nonce[2]);
+//        printf("ni->icmp6_ni_nounce4 %d\n", ni->icmp6_ni_nonce[3]);
+
         printf("Icmp6 seq : %d\n", seq);
-    }
-
-    cc = recvmsg(sockfd_v6, &m, 0);
-    printf("cc : %ld\n", cc);
-
-    if (cc > 0) {
-        icp = (struct icmp6_hdr *) data_v6;
-        ni = (struct icmp6_nodeinfo *) data_v6;
-        seq = ntohs(*(u_int16_t *)ni->icmp6_ni_nonce);
-
-        printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
-        printf("Icmp6 seq : %d\n", seq);
+//        printf("Icmp6 seq1 : %d\n", seq1);
+        printf("\nIcmp6 struct size : %ld\n", sizeof(struct icmp6_hdr));
+//        printf("icmp6_type offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_type));
+//        printf("icmp6_code offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_code));
+//        printf("icmp6_cksum offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_cksum));
+//        printf("icmp6_dataun offset: %ld\n", offsetof(struct icmp6_hdr, icmp6_dataun));
+//
+        printf("icmp6_nodeinfo struct size : %ld\n", sizeof(struct icmp6_nodeinfo));
+//        printf("icmp6_ni_hdr offset: %ld\n", offsetof(struct icmp6_nodeinfo, icmp6_ni_hdr));
+        printf("icmp6_ni_nonce offset: %ld\n", offsetof(struct icmp6_nodeinfo, icmp6_ni_nonce));
     }
 
     return 0;
