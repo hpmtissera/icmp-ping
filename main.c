@@ -108,6 +108,8 @@ int main() {
 
     long test = getaddrinfo("fe80::1035:a68:335d:895b", NULL, &hints, &res);
 
+//    ipv6_addr.sin6_scope_id = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
+
     printf("sin6_scope_id result : %d\n", ipv6_addr.sin6_scope_id);
 
     long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
@@ -137,7 +139,6 @@ int main() {
 
     if (cc > 0) {
         icp = (struct icmp6_hdr *) data_v6;
-        ni = (struct icmp6_nodeinfo *) data_v6;
         seq = ntohs(icp->icmp6_seq);
 
         printf("Icmp6 type (shoud be 129) : %d\n", icp->icmp6_type);
