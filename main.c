@@ -121,40 +121,25 @@ int main() {
     iov[0].iov_base = (caddr_t) data_v6;
 
     printf("Interface id lo0 : %d\n", if_nametoindex("lo0"));
-    printf("Interface id gif0 : %d\n", if_nametoindex("gif0"));
-    printf("Interface id stf0 : %d\n", if_nametoindex("stf0"));
-    printf("Interface id XHC0 : %d\n", if_nametoindex("XHC0"));
-    printf("Interface id XHC0 : %d\n", if_nametoindex("XHC0"));
-    printf("Interface id XHC20 : %d\n", if_nametoindex("XHC20"));
     printf("Interface id en0 : %d\n", if_nametoindex("en0"));
-    printf("Interface id en3 : %d\n", if_nametoindex("en3"));
-    printf("Interface id en4 : %d\n", if_nametoindex("en4"));
-    printf("Interface id en2 : %d\n", if_nametoindex("en2"));
-    printf("Interface id en1 : %d\n", if_nametoindex("en1"));
-    printf("Interface id bridge0 : %d\n", if_nametoindex("bridge0"));
-    printf("Interface id p2p0 : %d\n", if_nametoindex("p2p0"));
-    printf("Interface id awdl0 : %d\n", if_nametoindex("awdl0"));
-    printf("Interface id utun0 : %d\n", if_nametoindex("utun0"));
-    printf("Interface id utun1 : %d\n", if_nametoindex("utun1"));
-    printf("Interface id vmnet1 : %d\n", if_nametoindex("vmnet1"));
-    printf("Interface id vmnet8 : %d\n", if_nametoindex("vmnet8"));
-    printf("Interface id en5 : %d\n\n", if_nametoindex("en5"));
 
 //    inet_pton(AF_INET6, "2001:4860:4860::8888", &ipv6_addr.sin6_addr);
-    inet_pton(AF_INET6, "fe80::1035:a68:335d:895b", &ipv6_addr.sin6_addr);
+    inet_pton(AF_INET6, "fe80::1879:233:6c1d:ec2d", &ipv6_addr.sin6_addr);
 
     struct addrinfo hints, *res, *current;
     hints.ai_family = AF_INET6;
-    hints.ai_protocol = IPPROTO_ICMPV6;
-//    hints.ai_socktype = SOCK_DGRAM;
+//    hints.ai_protocol = IPPROTO_ICMPV6;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
 
-    long test = getaddrinfo("fe80::1035:a68:335d:895b%en0", NULL, &hints, &res);
+    long test = getaddrinfo("fe80::1879:233:6c1d:ec2d%en0", NULL, &hints, &res);
 
-    int interface = ((struct sockaddr_in6 *) &(res->ai_addr))->sin6_scope_id;
+    int interface = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_scope_id;
 
     for (current = res; current != NULL; current = res->ai_next) {
-        int i = ((struct sockaddr_in6 *) &(current->ai_addr))->sin6_scope_id;
+        int i = ((struct sockaddr_in6 *) (current->ai_addr))->sin6_scope_id;
         printf("sin6_scope_id result (interface id) : %d\n", i);
+        struct sockaddr_in6 * so = (struct sockaddr_in6 *)current->ai_addr;
     }
 
     printf("sin6_scope_id result (interface id) : %d\n", interface);
@@ -192,7 +177,7 @@ int main() {
         printf("Icmp6 seq : %d\n", seq);
     }
 
-    printInterfaces();
+//    printInterfaces();
 
     return 0;
 }
