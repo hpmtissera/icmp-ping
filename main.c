@@ -130,21 +130,21 @@ int main() {
     hints.ai_family = AF_INET6;
 //    hints.ai_protocol = IPPROTO_ICMPV6;
     hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
+//    hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
 
     long test = getaddrinfo("fe80::1879:233:6c1d:ec2d%en0", NULL, &hints, &res);
 
     int interface = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_scope_id;
+    struct sockaddr_in6 * so = (struct sockaddr_in6 *)res->ai_addr;
 
-    for (current = res; current != NULL; current = res->ai_next) {
-        int i = ((struct sockaddr_in6 *) (current->ai_addr))->sin6_scope_id;
-        printf("sin6_scope_id result (interface id) : %d\n", i);
-        struct sockaddr_in6 * so = (struct sockaddr_in6 *)current->ai_addr;
-    }
+//    for (current = res; current != NULL; current = res->ai_next) {
+//        int i = ((struct sockaddr_in6 *) (current->ai_addr))->sin6_scope_id;
+//        printf("sin6_scope_id result (interface id) : %d\n", i);
+//    }
 
     printf("sin6_scope_id result (interface id) : %d\n", interface);
 
-    long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, (struct sockaddr_in6 *) &ipv6_addr,
+    long ipv6_icmp = sendto(sockfd_v6, data_v6, sizeof icmp_hdr6 + 7, 0, so,
                             sizeof(ipv6_addr));
     printf("output ipv6_icmp : %ld\n", ipv6_icmp);
 
