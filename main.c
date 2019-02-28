@@ -133,9 +133,43 @@ int main() {
 //    hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
 
     long test = getaddrinfo("fe80::1879:233:6c1d:ec2d%en0", NULL, &hints, &res);
+    printf("\n\noutput : %ld\n\n", test);
+
+//    long test = getaddrinfo("fe80::1879:233:6c1d:ec2d", NULL, &hints, &res);
+
+    printf("\nsizeOf(struct addrinfo): %ld\n", sizeof(struct addrinfo));
+    printf("ai_flags offset: %ld\n", offsetof(struct addrinfo, ai_flags));
+    printf("ai_family offset: %ld\n", offsetof(struct addrinfo, ai_family));
+    printf("ai_socktype offset: %ld\n", offsetof(struct addrinfo, ai_socktype));
+    printf("ai_protocol offset: %ld\n", offsetof(struct addrinfo, ai_protocol));
+    printf("ai_addrlen offset: %ld\n", offsetof(struct addrinfo, ai_addrlen));
+    printf("ai_canonname offset: %ld\n", offsetof(struct addrinfo, ai_canonname));
+    printf("ai_addr offset: %ld\n", offsetof(struct addrinfo, ai_addr));
+    printf("addr_info offset: %ld\n\n", offsetof(struct addrinfo, ai_next));
+
+    printf("\n\nai_flags : %d\n", res->ai_flags);
+    printf("family : %d\n\n", res->ai_family);
+
+    printf("sizeOf(struct sockaddr_in6): %ld\n", sizeof(struct sockaddr_in6));
+
+    hexDump("hints", &hints, 8);
+    hexDump("response", res, 48);
+
 
     int interface = ((struct sockaddr_in6 *) (res->ai_addr))->sin6_scope_id;
     struct sockaddr_in6 * so = (struct sockaddr_in6 *)res->ai_addr;
+
+    printf("sin6_len %d\n", so->sin6_len);
+    printf("sin6_family %d\n", so->sin6_family);
+    printf("sin6_port %d\n", so->sin6_port);
+    printf("sin6_flowinfo %d\n", so->sin6_flowinfo);
+    printf("sin6_scope_id %d\n", so->sin6_scope_id);
+
+    printf("\n\nsin6_len offset: %ld\n", offsetof(struct sockaddr_in6, sin6_len));
+    printf("sin6_family offset: %ld\n", offsetof(struct sockaddr_in6, sin6_family));
+    printf("sin6_port offset: %ld\n", offsetof(struct sockaddr_in6, sin6_port));
+    printf("sin6_flowinfo offset: %ld\n", offsetof(struct sockaddr_in6, sin6_flowinfo));
+    printf("sin6_scope_id offset: %ld\n\n", offsetof(struct sockaddr_in6, sin6_scope_id));
 
 //    for (current = res; current != NULL; current = res->ai_next) {
 //        int i = ((struct sockaddr_in6 *) (current->ai_addr))->sin6_scope_id;
@@ -178,6 +212,8 @@ int main() {
     }
 
 //    printInterfaces();
+
+    printf("Storage size for int : %d \n", sizeof(int));
 
     return 0;
 }
